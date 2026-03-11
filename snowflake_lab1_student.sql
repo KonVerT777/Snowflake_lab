@@ -49,7 +49,7 @@ USE WAREHOUSE COMPUTE_LAB;
 -- ============================================================
 -- NOTE: This step is performed via the Snowflake UI:
 -- Snowflake Marketplace -> Search "Global Weather & Climate Data for BI"
--- -> Get Data -> Database name: GLOBAL_WEATHER_CLIMATE_DATA_FOR_BI
+-- -> Get Data -> Database name: GLOBAL_WEATHER__CLIMATE_DATA_BY_PELMOREX_WEATHER_SOURCE
 -- After obtaining, the shared database is available in your account.
 
 -- Verify the marketplace dataset is accessible:
@@ -80,17 +80,19 @@ FROM GLOBAL.INFORMATION_SCHEMA.SCHEMATA
 ORDER BY SCHEMA_NAME;
 
 /* RESPONSE:
-+--------------------+-------------------------------+-------------------------------+---------+
-| SCHEMA_NAME        | CREATED                       | LAST_ALTERED                  | COMMENT |
-+--------------------+-------------------------------+-------------------------------+---------+
-| GLOBAL_WEATHER     | 2024-01-15 10:23:45.000 +0000 | 2024-01-15 10:23:45.000 +0000 | NULL    |
-| INFORMATION_SCHEMA | 2024-01-15 10:23:44.000 +0000 | 2024-01-15 10:23:44.000 +0000 | NULL    |
-+--------------------+-------------------------------+-------------------------------+---------+
-2 Row(s) produced.
++--------------------+-------------------------------+-------------------------------+---------------------------+
+| SCHEMA_NAME        | CREATED                       | LAST_ALTERED                  | COMMENT                   |
++--------------------+-------------------------------+-------------------------------+---------------------------+
+| GLOBAL_WEATHER     | 2026-03-11 07:20:21.561 -0700 | 2026-03-11 07:20:21.561 -0700 | NULL                      |
+| INFORMATION_SCHEMA | NULL                          | NULL                          | Views describing the conte|
+| PUBLIC             | 2026-03-11 07:20:09.390 -0700 | 2026-03-11 07:20:09.390 -0700 | NULL                      |
++--------------------+-------------------------------+-------------------------------+---------------------------+
+3 Row(s) produced.
 
-The GLOBAL database contains 2 schemas:
-1. GLOBAL_WEATHER  - the project schema for weather data
-2. INFORMATION_SCHEMA - system schema (always present in every Snowflake database)
+The GLOBAL database contains 3 schemas:
+1. GLOBAL_WEATHER    - the project schema created explicitly for weather data
+2. INFORMATION_SCHEMA - system schema always present in every Snowflake database
+3. PUBLIC            - default schema automatically created by Snowflake for every new database
 */
 
 
@@ -103,7 +105,7 @@ SELECT
     TABLE_SCHEMA   AS SCHEMA_NAME,
     COUNT(*)       AS VIEW_COUNT,
     LISTAGG(TABLE_NAME, ', ') WITHIN GROUP (ORDER BY TABLE_NAME) AS VIEW_NAMES
-FROM GLOBAL_WEATHER_CLIMATE_DATA_FOR_BI.INFORMATION_SCHEMA.VIEWS
+FROM GLOBAL_WEATHER__CLIMATE_DATA_BY_PELMOREX_WEATHER_SOURCE.INFORMATION_SCHEMA.VIEWS
 GROUP BY TABLE_SCHEMA
 ORDER BY TABLE_SCHEMA;
 
@@ -113,23 +115,22 @@ SELECT
     TABLE_SCHEMA   AS SCHEMA_NAME,
     TABLE_NAME     AS VIEW_NAME,
     VIEW_DEFINITION IS NOT NULL AS HAS_DEFINITION
-FROM GLOBAL_WEATHER_CLIMATE_DATA_FOR_BI.INFORMATION_SCHEMA.VIEWS
+FROM GLOBAL_WEATHER__CLIMATE_DATA_BY_PELMOREX_WEATHER_SOURCE.INFORMATION_SCHEMA.VIEWS
 ORDER BY TABLE_SCHEMA, TABLE_NAME;
 
 /* RESPONSE:
-+-------------------------------------+------------+--------------------------------------------------+
-| SCHEMA_NAME                         | VIEW_COUNT | VIEW_NAMES                                       |
-+-------------------------------------+------------+--------------------------------------------------+
-| CLIMATE                             |          2 | CLIMATOLOGY_STATS, CLIMATE_NORMALS               |
-| FORECAST                            |          3 | FORECAST_DAY, FORECAST_HOUR, FORECAST_DETAILS    |
-| HISTORICAL                          |          3 | HISTORY_DAY, HISTORY_HOUR, HISTORY_POINT         |
-+-------------------------------------+------------+--------------------------------------------------+
++--------------------+------------+--------------------------------------------------------------+
+| SCHEMA_NAME        | VIEW_COUNT | VIEW_NAMES                                                   |
++--------------------+------------+--------------------------------------------------------------+
+| INFORMATION_SCHEMA |         60 | APPLICABLE_ROLES, APPLICATION_CONFIGURATIONS, ...            |
+| PWS_BI_SAMPLE      |          3 | POINT_CLIMATOLOGY_DAY, POINT_FORECAST_DAY, POINT_HISTORY_DAY |
++--------------------+------------+--------------------------------------------------------------+
+2 Row(s) produced.
 
 Schemas and their views:
-- CLIMATE schema:    2 views  (CLIMATOLOGY_STATS, CLIMATE_NORMALS)
-- FORECAST schema:   3 views  (FORECAST_DAY, FORECAST_HOUR, FORECAST_DETAILS)
-- HISTORICAL schema: 3 views  (HISTORY_DAY, HISTORY_HOUR, HISTORY_POINT)
-Total: 8 views across 3 schemas
+- INFORMATION_SCHEMA schema: 60 views (system metadata views)
+- PWS_BI_SAMPLE schema:       3 views (POINT_CLIMATOLOGY_DAY, POINT_FORECAST_DAY, POINT_HISTORY_DAY)
+Total: 63 views across 2 schemas
 */
 
 
@@ -148,75 +149,11 @@ SELECT
     NUMERIC_PRECISION,
     NUMERIC_SCALE,
     IS_NULLABLE
-FROM GLOBAL_WEATHER_CLIMATE_DATA_FOR_BI.INFORMATION_SCHEMA.COLUMNS
-WHERE TABLE_SCHEMA IN ('CLIMATE', 'FORECAST', 'HISTORICAL')
+FROM GLOBAL_WEATHER__CLIMATE_DATA_BY_PELMOREX_WEATHER_SOURCE.INFORMATION_SCHEMA.COLUMNS
 ORDER BY TABLE_SCHEMA, TABLE_NAME, ORDINAL_POSITION;
 
-/* RESPONSE (key columns shown):
-+------------+-------------------+--------------+-------------------------------+-----------+----------+------------------+-----------+
-| SCHEMA     | VIEW_NAME         | COL_ORDER    | COLUMN_NAME                   | DATA_TYPE | CHAR_LEN | NUMERIC_PRECISION| NULLABLE  |
-+------------+-------------------+--------------+-------------------------------+-----------+----------+------------------+-----------+
-| CLIMATE    | CLIMATE_NORMALS   |  1           | POSTAL_CODE                   | TEXT      | 16777216 | NULL             | Y         |
-| CLIMATE    | CLIMATE_NORMALS   |  2           | COUNTRY                       | TEXT      | 16777216 | NULL             | Y         |
-| CLIMATE    | CLIMATE_NORMALS   |  3           | LATITUDE                      | REAL      | NULL     | NULL             | Y         |
-| CLIMATE    | CLIMATE_NORMALS   |  4           | LONGITUDE                     | REAL      | NULL     | NULL             | Y         |
-| CLIMATE    | CLIMATE_NORMALS   |  5           | DATE_VALID_STD                | DATE      | NULL     | NULL             | Y         |
-| CLIMATE    | CLIMATE_NORMALS   |  6           | AVG_TEMPERATURE_AIR_2M_F      | REAL      | NULL     | NULL             | Y         |
-| CLIMATE    | CLIMATE_NORMALS   |  7           | AVG_PRECIPITATION_IN          | REAL      | NULL     | NULL             | Y         |
-| CLIMATE    | CLIMATE_NORMALS   |  8           | AVG_WIND_SPEED_10M_MPH        | REAL      | NULL     | NULL             | Y         |
-| CLIMATE    | CLIMATOLOGY_STATS |  1           | POSTAL_CODE                   | TEXT      | 16777216 | NULL             | Y         |
-| CLIMATE    | CLIMATOLOGY_STATS |  2           | COUNTRY                       | TEXT      | 16777216 | NULL             | Y         |
-| CLIMATE    | CLIMATOLOGY_STATS |  3           | MONTH_OF_YEAR                 | NUMBER    | NULL     | 9                | Y         |
-| CLIMATE    | CLIMATOLOGY_STATS |  4           | AVG_TEMPERATURE_AIR_2M_F      | REAL      | NULL     | NULL             | Y         |
-| CLIMATE    | CLIMATOLOGY_STATS |  5           | MIN_TEMPERATURE_AIR_2M_F      | REAL      | NULL     | NULL             | Y         |
-| CLIMATE    | CLIMATOLOGY_STATS |  6           | MAX_TEMPERATURE_AIR_2M_F      | REAL      | NULL     | NULL             | Y         |
-| FORECAST   | FORECAST_DAY      |  1           | POSTAL_CODE                   | TEXT      | 16777216 | NULL             | Y         |
-| FORECAST   | FORECAST_DAY      |  2           | COUNTRY                       | TEXT      | 16777216 | NULL             | Y         |
-| FORECAST   | FORECAST_DAY      |  3           | LATITUDE                      | REAL      | NULL     | NULL             | Y         |
-| FORECAST   | FORECAST_DAY      |  4           | LONGITUDE                     | REAL      | NULL     | NULL             | Y         |
-| FORECAST   | FORECAST_DAY      |  5           | DATE_VALID_STD                | DATE      | NULL     | NULL             | Y         |
-| FORECAST   | FORECAST_DAY      |  6           | AVG_TEMPERATURE_AIR_2M_F      | REAL      | NULL     | NULL             | Y         |
-| FORECAST   | FORECAST_DAY      |  7           | MAX_TEMPERATURE_AIR_2M_F      | REAL      | NULL     | NULL             | Y         |
-| FORECAST   | FORECAST_DAY      |  8           | MIN_TEMPERATURE_AIR_2M_F      | REAL      | NULL     | NULL             | Y         |
-| FORECAST   | FORECAST_DAY      |  9           | PRECIPITATION_IN              | REAL      | NULL     | NULL             | Y         |
-| FORECAST   | FORECAST_DAY      | 10           | WIND_SPEED_10M_MPH            | REAL      | NULL     | NULL             | Y         |
-| FORECAST   | FORECAST_HOUR     |  1           | POSTAL_CODE                   | TEXT      | 16777216 | NULL             | Y         |
-| FORECAST   | FORECAST_HOUR     |  2           | COUNTRY                       | TEXT      | 16777216 | NULL             | Y         |
-| FORECAST   | FORECAST_HOUR     |  3           | LATITUDE                      | REAL      | NULL     | NULL             | Y         |
-| FORECAST   | FORECAST_HOUR     |  4           | LONGITUDE                     | REAL      | NULL     | NULL             | Y         |
-| FORECAST   | FORECAST_HOUR     |  5           | DATE_VALID_STD                | DATE      | NULL     | NULL             | Y         |
-| FORECAST   | FORECAST_HOUR     |  6           | TIME_INIT_UTC                 | TIMESTAMP | NULL     | NULL             | Y         |
-| FORECAST   | FORECAST_HOUR     |  7           | TEMPERATURE_AIR_2M_F          | REAL      | NULL     | NULL             | Y         |
-| FORECAST   | FORECAST_HOUR     |  8           | PRECIPITATION_IN              | REAL      | NULL     | NULL             | Y         |
-| FORECAST   | FORECAST_HOUR     |  9           | WIND_SPEED_10M_MPH            | REAL      | NULL     | NULL             | Y         |
-| HISTORICAL | HISTORY_DAY       |  1           | POSTAL_CODE                   | TEXT      | 16777216 | NULL             | Y         |
-| HISTORICAL | HISTORY_DAY       |  2           | COUNTRY                       | TEXT      | 16777216 | NULL             | Y         |
-| HISTORICAL | HISTORY_DAY       |  3           | LATITUDE                      | REAL      | NULL     | NULL             | Y         |
-| HISTORICAL | HISTORY_DAY       |  4           | LONGITUDE                     | REAL      | NULL     | NULL             | Y         |
-| HISTORICAL | HISTORY_DAY       |  5           | DATE_VALID_STD                | DATE      | NULL     | NULL             | Y         |
-| HISTORICAL | HISTORY_DAY       |  6           | AVG_TEMPERATURE_AIR_2M_F      | REAL      | NULL     | NULL             | Y         |
-| HISTORICAL | HISTORY_DAY       |  7           | MAX_TEMPERATURE_AIR_2M_F      | REAL      | NULL     | NULL             | Y         |
-| HISTORICAL | HISTORY_DAY       |  8           | MIN_TEMPERATURE_AIR_2M_F      | REAL      | NULL     | NULL             | Y         |
-| HISTORICAL | HISTORY_DAY       |  9           | PRECIPITATION_IN              | REAL      | NULL     | NULL             | Y         |
-| HISTORICAL | HISTORY_DAY       | 10           | AVG_WIND_SPEED_10M_MPH        | REAL      | NULL     | NULL             | Y         |
-| HISTORICAL | HISTORY_HOUR      |  1           | POSTAL_CODE                   | TEXT      | 16777216 | NULL             | Y         |
-| HISTORICAL | HISTORY_HOUR      |  2           | COUNTRY                       | TEXT      | 16777216 | NULL             | Y         |
-| HISTORICAL | HISTORY_HOUR      |  3           | LATITUDE                      | REAL      | NULL     | NULL             | Y         |
-| HISTORICAL | HISTORY_HOUR      |  4           | LONGITUDE                     | REAL      | NULL     | NULL             | Y         |
-| HISTORICAL | HISTORY_HOUR      |  5           | DATE_VALID_STD                | DATE      | NULL     | NULL             | Y         |
-| HISTORICAL | HISTORY_HOUR      |  6           | TIME_INIT_UTC                 | TIMESTAMP | NULL     | NULL             | Y         |
-| HISTORICAL | HISTORY_HOUR      |  7           | TEMPERATURE_AIR_2M_F          | REAL      | NULL     | NULL             | Y         |
-| HISTORICAL | HISTORY_HOUR      |  8           | PRECIPITATION_IN              | REAL      | NULL     | NULL             | Y         |
-| HISTORICAL | HISTORY_HOUR      |  9           | WIND_SPEED_10M_MPH            | REAL      | NULL     | NULL             | Y         |
-| HISTORICAL | HISTORY_POINT     |  1           | POSTAL_CODE                   | TEXT      | 16777216 | NULL             | Y         |
-| HISTORICAL | HISTORY_POINT     |  2           | COUNTRY                       | TEXT      | 16777216 | NULL             | Y         |
-| HISTORICAL | HISTORY_POINT     |  3           | LATITUDE                      | REAL      | NULL     | NULL             | Y         |
-| HISTORICAL | HISTORY_POINT     |  4           | LONGITUDE                     | REAL      | NULL     | NULL             | Y         |
-| HISTORICAL | HISTORY_POINT     |  5           | DATE_VALID_STD                | DATE      | NULL     | NULL             | Y         |
-| HISTORICAL | HISTORY_POINT     |  6           | TEMPERATURE_AIR_2M_F          | REAL      | NULL     | NULL             | Y         |
-| HISTORICAL | HISTORY_POINT     |  7           | PRECIPITATION_IN              | REAL      | NULL     | NULL             | Y         |
-| HISTORICAL | HISTORY_POINT     |  8           | WIND_SPEED_10M_MPH            | REAL      | NULL     | NULL             | Y         |
-+------------+-------------------+--------------+-------------------------------+-----------+----------+------------------+-----------+
+/* RESPONSE (Task 5):
+[awaiting actual output — paste result here]
 */
 
 
@@ -230,51 +167,59 @@ USE SCHEMA GLOBAL_WEATHER;
 
 CREATE OR REPLACE VIEW hot_and_cold_hist AS
     -- 100 warmest records
-    SELECT
-        DATE_VALID_STD,
-        COUNTRY,
-        POSTAL_CODE,
-        AVG_TEMPERATURE_AIR_2M_F,
-        'HOTTEST' AS TEMPERATURE_CATEGORY
-    FROM GLOBAL_WEATHER_CLIMATE_DATA_FOR_BI.HISTORICAL.HISTORY_DAY
-    ORDER BY AVG_TEMPERATURE_AIR_2M_F DESC NULLS LAST
-    LIMIT 100
+    SELECT * FROM (
+        SELECT
+            DATE_VALID_STD,
+            COUNTRY,
+            POSTAL_CODE,
+            AVG_TEMPERATURE_AIR_2M_F,
+            'HOTTEST' AS TEMPERATURE_CATEGORY
+        FROM GLOBAL_WEATHER__CLIMATE_DATA_BY_PELMOREX_WEATHER_SOURCE.PWS_BI_SAMPLE.POINT_HISTORY_DAY
+        ORDER BY AVG_TEMPERATURE_AIR_2M_F DESC NULLS LAST
+        LIMIT 100
+    )
 
     UNION ALL
 
     -- 100 coldest records
-    SELECT
-        DATE_VALID_STD,
-        COUNTRY,
-        POSTAL_CODE,
-        AVG_TEMPERATURE_AIR_2M_F,
-        'COLDEST' AS TEMPERATURE_CATEGORY
-    FROM GLOBAL_WEATHER_CLIMATE_DATA_FOR_BI.HISTORICAL.HISTORY_DAY
-    ORDER BY AVG_TEMPERATURE_AIR_2M_F ASC NULLS LAST
-    LIMIT 100;
+    SELECT * FROM (
+        SELECT
+            DATE_VALID_STD,
+            COUNTRY,
+            POSTAL_CODE,
+            AVG_TEMPERATURE_AIR_2M_F,
+            'COLDEST' AS TEMPERATURE_CATEGORY
+        FROM GLOBAL_WEATHER__CLIMATE_DATA_BY_PELMOREX_WEATHER_SOURCE.PWS_BI_SAMPLE.POINT_HISTORY_DAY
+        ORDER BY AVG_TEMPERATURE_AIR_2M_F ASC NULLS LAST
+        LIMIT 100
+    );
 
 /* STUDENT ANSWER FOR TASK 6. Part 1:
 
 CREATE OR REPLACE VIEW GLOBAL.GLOBAL_WEATHER.hot_and_cold_hist AS
-    SELECT
-        DATE_VALID_STD,
-        COUNTRY,
-        POSTAL_CODE,
-        AVG_TEMPERATURE_AIR_2M_F,
-        'HOTTEST' AS TEMPERATURE_CATEGORY
-    FROM GLOBAL_WEATHER_CLIMATE_DATA_FOR_BI.HISTORICAL.HISTORY_DAY
-    ORDER BY AVG_TEMPERATURE_AIR_2M_F DESC NULLS LAST
-    LIMIT 100
+    SELECT * FROM (
+        SELECT
+            DATE_VALID_STD,
+            COUNTRY,
+            POSTAL_CODE,
+            AVG_TEMPERATURE_AIR_2M_F,
+            'HOTTEST' AS TEMPERATURE_CATEGORY
+        FROM GLOBAL_WEATHER__CLIMATE_DATA_BY_PELMOREX_WEATHER_SOURCE.PWS_BI_SAMPLE.POINT_HISTORY_DAY
+        ORDER BY AVG_TEMPERATURE_AIR_2M_F DESC NULLS LAST
+        LIMIT 100
+    )
     UNION ALL
-    SELECT
-        DATE_VALID_STD,
-        COUNTRY,
-        POSTAL_CODE,
-        AVG_TEMPERATURE_AIR_2M_F,
-        'COLDEST' AS TEMPERATURE_CATEGORY
-    FROM GLOBAL_WEATHER_CLIMATE_DATA_FOR_BI.HISTORICAL.HISTORY_DAY
-    ORDER BY AVG_TEMPERATURE_AIR_2M_F ASC NULLS LAST
-    LIMIT 100;
+    SELECT * FROM (
+        SELECT
+            DATE_VALID_STD,
+            COUNTRY,
+            POSTAL_CODE,
+            AVG_TEMPERATURE_AIR_2M_F,
+            'COLDEST' AS TEMPERATURE_CATEGORY
+        FROM GLOBAL_WEATHER__CLIMATE_DATA_BY_PELMOREX_WEATHER_SOURCE.PWS_BI_SAMPLE.POINT_HISTORY_DAY
+        ORDER BY AVG_TEMPERATURE_AIR_2M_F ASC NULLS LAST
+        LIMIT 100
+    );
 
 View created successfully.
 */
@@ -323,7 +268,7 @@ SELECT
     ROUND(MIN(AVG_PRESSURE_MEAN_MB), 2)             AS MIN_PRESSURE_MB,
     ROUND(MAX(AVG_PRESSURE_MEAN_MB), 2)             AS MAX_PRESSURE_MB,
     ROUND(STDDEV(AVG_PRESSURE_MEAN_MB), 2)          AS STDDEV_PRESSURE_MB
-FROM GLOBAL_WEATHER_CLIMATE_DATA_FOR_BI.FORECAST.FORECAST_DAY
+FROM GLOBAL_WEATHER__CLIMATE_DATA_BY_PELMOREX_WEATHER_SOURCE.FORECAST.FORECAST_DAY
 WHERE AVG_PRESSURE_MEAN_MB IS NOT NULL
 GROUP BY COUNTRY;
 
@@ -337,7 +282,7 @@ SELECT
     ROUND(MIN(AVG_PRESSURE_MEAN_MB), 2)    AS MIN_PRESSURE_MB,
     ROUND(MAX(AVG_PRESSURE_MEAN_MB), 2)    AS MAX_PRESSURE_MB,
     ROUND(STDDEV(AVG_PRESSURE_MEAN_MB), 2) AS STDDEV_PRESSURE_MB
-FROM GLOBAL_WEATHER_CLIMATE_DATA_FOR_BI.FORECAST.FORECAST_DAY
+FROM GLOBAL_WEATHER__CLIMATE_DATA_BY_PELMOREX_WEATHER_SOURCE.FORECAST.FORECAST_DAY
 WHERE AVG_PRESSURE_MEAN_MB IS NOT NULL
 GROUP BY COUNTRY;
 
@@ -458,7 +403,7 @@ SELECT
     MAX(DATE_VALID_STD)               AS LATEST_DATE,
     COUNT(DISTINCT COUNTRY)           AS COUNTRIES,
     COUNT(DISTINCT POSTAL_CODE)       AS POSTAL_CODES
-FROM GLOBAL_WEATHER_CLIMATE_DATA_FOR_BI.HISTORICAL.HISTORY_DAY;
+FROM GLOBAL_WEATHER__CLIMATE_DATA_BY_PELMOREX_WEATHER_SOURCE.PWS_BI_SAMPLE.POINT_HISTORY_DAY;
 
 /* RESPONSE (Task 8):
 TABLE_NAME: us_zip_codes
@@ -500,7 +445,7 @@ SELECT
     SUM(CASE WHEN AVG_WIND_SPEED_10M_MPH IS NULL THEN 1 ELSE 0 END)   AS NULL_WIND,
     SUM(CASE WHEN COUNTRY IS NULL THEN 1 ELSE 0 END)                  AS NULL_COUNTRY,
     SUM(CASE WHEN POSTAL_CODE IS NULL THEN 1 ELSE 0 END)              AS NULL_POSTAL
-FROM GLOBAL_WEATHER_CLIMATE_DATA_FOR_BI.HISTORICAL.HISTORY_DAY;
+FROM GLOBAL_WEATHER__CLIMATE_DATA_BY_PELMOREX_WEATHER_SOURCE.PWS_BI_SAMPLE.POINT_HISTORY_DAY;
 
 -- 2. Identify records with physically impossible values (outliers)
 SELECT
@@ -510,7 +455,7 @@ SELECT
     AVG_TEMPERATURE_AIR_2M_F,
     MAX_TEMPERATURE_AIR_2M_F,
     MIN_TEMPERATURE_AIR_2M_F
-FROM GLOBAL_WEATHER_CLIMATE_DATA_FOR_BI.HISTORICAL.HISTORY_DAY
+FROM GLOBAL_WEATHER__CLIMATE_DATA_BY_PELMOREX_WEATHER_SOURCE.PWS_BI_SAMPLE.POINT_HISTORY_DAY
 WHERE AVG_TEMPERATURE_AIR_2M_F > 150   -- above world record high ~134°F
    OR AVG_TEMPERATURE_AIR_2M_F < -130  -- below world record low ~-128°F
    OR MAX_TEMPERATURE_AIR_2M_F < MIN_TEMPERATURE_AIR_2M_F  -- logical impossibility
@@ -526,7 +471,7 @@ SELECT
     DATEDIFF('day', MIN(DATE_VALID_STD), MAX(DATE_VALID_STD)) + 1 AS EXPECTED_DAYS,
     DATEDIFF('day', MIN(DATE_VALID_STD), MAX(DATE_VALID_STD)) + 1
         - COUNT(DISTINCT DATE_VALID_STD)        AS MISSING_DAYS
-FROM GLOBAL_WEATHER_CLIMATE_DATA_FOR_BI.HISTORICAL.HISTORY_DAY
+FROM GLOBAL_WEATHER__CLIMATE_DATA_BY_PELMOREX_WEATHER_SOURCE.PWS_BI_SAMPLE.POINT_HISTORY_DAY
 GROUP BY COUNTRY, POSTAL_CODE
 HAVING MISSING_DAYS > 0
 ORDER BY MISSING_DAYS DESC
@@ -537,7 +482,7 @@ SELECT
     POSTAL_CODE,
     COUNT(DISTINCT COUNTRY) AS COUNTRY_COUNT,
     LISTAGG(DISTINCT COUNTRY, ', ') WITHIN GROUP (ORDER BY COUNTRY) AS COUNTRIES
-FROM GLOBAL_WEATHER_CLIMATE_DATA_FOR_BI.HISTORICAL.HISTORY_DAY
+FROM GLOBAL_WEATHER__CLIMATE_DATA_BY_PELMOREX_WEATHER_SOURCE.PWS_BI_SAMPLE.POINT_HISTORY_DAY
 GROUP BY POSTAL_CODE
 HAVING COUNTRY_COUNT > 1
 LIMIT 20;
@@ -545,7 +490,7 @@ LIMIT 20;
 -- 5. Validate lat/lon coordinate ranges
 SELECT
     COUNT(*) AS INVALID_COORDINATES
-FROM GLOBAL_WEATHER_CLIMATE_DATA_FOR_BI.HISTORICAL.HISTORY_DAY
+FROM GLOBAL_WEATHER__CLIMATE_DATA_BY_PELMOREX_WEATHER_SOURCE.PWS_BI_SAMPLE.POINT_HISTORY_DAY
 WHERE LATITUDE  NOT BETWEEN -90  AND  90
    OR LONGITUDE NOT BETWEEN -180 AND 180;
 
@@ -595,7 +540,7 @@ SELECT
     ROUND(MIN(AVG_TEMPERATURE_AIR_2M_F), 2)     AS GLOBAL_MIN_TEMP_F,
     ROUND(MAX(AVG_TEMPERATURE_AIR_2M_F), 2)     AS GLOBAL_MAX_TEMP_F,
     ROUND(AVG(PRECIPITATION_IN), 4)             AS AVG_PRECIP_IN
-FROM GLOBAL_WEATHER_CLIMATE_DATA_FOR_BI.HISTORICAL.HISTORY_DAY
+FROM GLOBAL_WEATHER__CLIMATE_DATA_BY_PELMOREX_WEATHER_SOURCE.PWS_BI_SAMPLE.POINT_HISTORY_DAY
 GROUP BY 1
 ORDER BY 1;
 
@@ -604,7 +549,7 @@ SELECT
     COUNTRY,
     ROUND(AVG(AVG_TEMPERATURE_AIR_2M_F), 2)    AS AVG_TEMP_F,
     COUNT(*)                                    AS RECORD_COUNT
-FROM GLOBAL_WEATHER_CLIMATE_DATA_FOR_BI.HISTORICAL.HISTORY_DAY
+FROM GLOBAL_WEATHER__CLIMATE_DATA_BY_PELMOREX_WEATHER_SOURCE.PWS_BI_SAMPLE.POINT_HISTORY_DAY
 GROUP BY COUNTRY
 ORDER BY AVG_TEMP_F DESC
 LIMIT 10;
@@ -626,8 +571,8 @@ SELECT
             THEN 'MODERATE ANOMALY'
         ELSE 'NORMAL'
     END                                          AS ANOMALY_CLASS
-FROM GLOBAL_WEATHER_CLIMATE_DATA_FOR_BI.HISTORICAL.HISTORY_DAY    h
-JOIN GLOBAL_WEATHER_CLIMATE_DATA_FOR_BI.CLIMATE.CLIMATE_NORMALS   c
+FROM GLOBAL_WEATHER__CLIMATE_DATA_BY_PELMOREX_WEATHER_SOURCE.PWS_BI_SAMPLE.POINT_HISTORY_DAY    h
+JOIN GLOBAL_WEATHER__CLIMATE_DATA_BY_PELMOREX_WEATHER_SOURCE.CLIMATE.CLIMATE_NORMALS   c
   ON h.POSTAL_CODE     = c.POSTAL_CODE
  AND h.COUNTRY         = c.COUNTRY
  AND MONTH(h.DATE_VALID_STD) = MONTH(c.DATE_VALID_STD)
@@ -677,7 +622,7 @@ SELECT
     ROUND(MAX(c.MAX_TEMPERATURE_AIR_2M_F)
         - MIN(c.MIN_TEMPERATURE_AIR_2M_F), 2)   AS TEMP_RANGE_F,
     COUNT(DISTINCT c.POSTAL_CODE)               AS LOCATIONS_COUNT
-FROM GLOBAL_WEATHER_CLIMATE_DATA_FOR_BI.CLIMATE.CLIMATOLOGY_STATS c
+FROM GLOBAL_WEATHER__CLIMATE_DATA_BY_PELMOREX_WEATHER_SOURCE.CLIMATE.CLIMATOLOGY_STATS c
 GROUP BY c.COUNTRY
 ORDER BY CLIM_AVG_TEMP_F DESC
 LIMIT 20;
@@ -691,7 +636,7 @@ SELECT
         AVG(CASE WHEN MONTH_OF_YEAR IN (6,7,8)  THEN AVG_TEMPERATURE_AIR_2M_F END)
       - AVG(CASE WHEN MONTH_OF_YEAR IN (12,1,2) THEN AVG_TEMPERATURE_AIR_2M_F END)
     , 2)                                                                                  AS SEASONAL_SWING_F
-FROM GLOBAL_WEATHER_CLIMATE_DATA_FOR_BI.CLIMATE.CLIMATOLOGY_STATS
+FROM GLOBAL_WEATHER__CLIMATE_DATA_BY_PELMOREX_WEATHER_SOURCE.CLIMATE.CLIMATOLOGY_STATS
 GROUP BY COUNTRY
 HAVING SUMMER_AVG_F IS NOT NULL AND WINTER_AVG_F IS NOT NULL
 ORDER BY ABS(SEASONAL_SWING_F) DESC
@@ -711,7 +656,7 @@ SELECT
     ROUND(AVG(AVG_TEMPERATURE_AIR_2M_F), 2)        AS AVG_TEMP_F,
     ROUND(MIN(MIN_TEMPERATURE_AIR_2M_F), 2)        AS MIN_TEMP_F,
     ROUND(MAX(MAX_TEMPERATURE_AIR_2M_F), 2)        AS MAX_TEMP_F
-FROM GLOBAL_WEATHER_CLIMATE_DATA_FOR_BI.CLIMATE.CLIMATOLOGY_STATS
+FROM GLOBAL_WEATHER__CLIMATE_DATA_BY_PELMOREX_WEATHER_SOURCE.CLIMATE.CLIMATOLOGY_STATS
 GROUP BY 1
 ORDER BY AVG_TEMP_F DESC;
 
@@ -803,8 +748,8 @@ SELECT
         WHEN fd.AVG_TEMPERATURE_AIR_2M_F > 86       THEN 'MODERATE COOLING DEMAND'
         ELSE 'NORMAL DEMAND'
     END                                             AS DEMAND_CATEGORY
-FROM GLOBAL_WEATHER_CLIMATE_DATA_FOR_BI.FORECAST.FORECAST_DAY       fd
-JOIN GLOBAL_WEATHER_CLIMATE_DATA_FOR_BI.CLIMATE.CLIMATOLOGY_STATS   cs
+FROM GLOBAL_WEATHER__CLIMATE_DATA_BY_PELMOREX_WEATHER_SOURCE.FORECAST.FORECAST_DAY       fd
+JOIN GLOBAL_WEATHER__CLIMATE_DATA_BY_PELMOREX_WEATHER_SOURCE.CLIMATE.CLIMATOLOGY_STATS   cs
   ON fd.POSTAL_CODE   = cs.POSTAL_CODE
  AND fd.COUNTRY       = cs.COUNTRY
  AND MONTH(fd.DATE_VALID_STD) = cs.MONTH_OF_YEAR
