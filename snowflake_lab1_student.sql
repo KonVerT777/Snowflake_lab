@@ -80,17 +80,19 @@ FROM GLOBAL.INFORMATION_SCHEMA.SCHEMATA
 ORDER BY SCHEMA_NAME;
 
 /* RESPONSE:
-+--------------------+-------------------------------+-------------------------------+---------+
-| SCHEMA_NAME        | CREATED                       | LAST_ALTERED                  | COMMENT |
-+--------------------+-------------------------------+-------------------------------+---------+
-| GLOBAL_WEATHER     | 2024-01-15 10:23:45.000 +0000 | 2024-01-15 10:23:45.000 +0000 | NULL    |
-| INFORMATION_SCHEMA | 2024-01-15 10:23:44.000 +0000 | 2024-01-15 10:23:44.000 +0000 | NULL    |
-+--------------------+-------------------------------+-------------------------------+---------+
-2 Row(s) produced.
++--------------------+-------------------------------+-------------------------------+---------------------------+
+| SCHEMA_NAME        | CREATED                       | LAST_ALTERED                  | COMMENT                   |
++--------------------+-------------------------------+-------------------------------+---------------------------+
+| GLOBAL_WEATHER     | 2026-03-11 07:20:21.561 -0700 | 2026-03-11 07:20:21.561 -0700 | NULL                      |
+| INFORMATION_SCHEMA | NULL                          | NULL                          | Views describing the conte|
+| PUBLIC             | 2026-03-11 07:20:09.390 -0700 | 2026-03-11 07:20:09.390 -0700 | NULL                      |
++--------------------+-------------------------------+-------------------------------+---------------------------+
+3 Row(s) produced.
 
-The GLOBAL database contains 2 schemas:
-1. GLOBAL_WEATHER  - the project schema for weather data
-2. INFORMATION_SCHEMA - system schema (always present in every Snowflake database)
+The GLOBAL database contains 3 schemas:
+1. GLOBAL_WEATHER    - the project schema created explicitly for weather data
+2. INFORMATION_SCHEMA - system schema always present in every Snowflake database
+3. PUBLIC            - default schema automatically created by Snowflake for every new database
 */
 
 
