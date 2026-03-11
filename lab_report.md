@@ -150,78 +150,13 @@ SELECT
     NUMERIC_SCALE,
     IS_NULLABLE
 FROM GLOBAL_WEATHER__CLIMATE_DATA_BY_PELMOREX_WEATHER_SOURCE.INFORMATION_SCHEMA.COLUMNS
-WHERE TABLE_SCHEMA IN ('CLIMATE', 'FORECAST', 'HISTORICAL')
+WHERE TABLE_SCHEMA = 'PWS_BI_SAMPLE'
 ORDER BY TABLE_SCHEMA, TABLE_NAME, ORDINAL_POSITION;
 ```
 
 **Response:**
 
-```
-+------------+-------------------+--------------+-------------------------------+-----------+----------+-------------------+-----------+
-| SCHEMA     | VIEW_NAME         | COL_ORDER    | COLUMN_NAME                   | DATA_TYPE | CHAR_LEN | NUMERIC_PRECISION | NULLABLE  |
-+------------+-------------------+--------------+-------------------------------+-----------+----------+-------------------+-----------+
-| CLIMATE    | CLIMATE_NORMALS   |  1           | POSTAL_CODE                   | TEXT      | 16777216 | NULL              | Y         |
-| CLIMATE    | CLIMATE_NORMALS   |  2           | COUNTRY                       | TEXT      | 16777216 | NULL              | Y         |
-| CLIMATE    | CLIMATE_NORMALS   |  3           | LATITUDE                      | REAL      | NULL     | NULL              | Y         |
-| CLIMATE    | CLIMATE_NORMALS   |  4           | LONGITUDE                     | REAL      | NULL     | NULL              | Y         |
-| CLIMATE    | CLIMATE_NORMALS   |  5           | DATE_VALID_STD                | DATE      | NULL     | NULL              | Y         |
-| CLIMATE    | CLIMATE_NORMALS   |  6           | AVG_TEMPERATURE_AIR_2M_F      | REAL      | NULL     | NULL              | Y         |
-| CLIMATE    | CLIMATE_NORMALS   |  7           | AVG_PRECIPITATION_IN          | REAL      | NULL     | NULL              | Y         |
-| CLIMATE    | CLIMATE_NORMALS   |  8           | AVG_WIND_SPEED_10M_MPH        | REAL      | NULL     | NULL              | Y         |
-| CLIMATE    | CLIMATOLOGY_STATS |  1           | POSTAL_CODE                   | TEXT      | 16777216 | NULL              | Y         |
-| CLIMATE    | CLIMATOLOGY_STATS |  2           | COUNTRY                       | TEXT      | 16777216 | NULL              | Y         |
-| CLIMATE    | CLIMATOLOGY_STATS |  3           | MONTH_OF_YEAR                 | NUMBER    | NULL     | 9                 | Y         |
-| CLIMATE    | CLIMATOLOGY_STATS |  4           | AVG_TEMPERATURE_AIR_2M_F      | REAL      | NULL     | NULL              | Y         |
-| CLIMATE    | CLIMATOLOGY_STATS |  5           | MIN_TEMPERATURE_AIR_2M_F      | REAL      | NULL     | NULL              | Y         |
-| CLIMATE    | CLIMATOLOGY_STATS |  6           | MAX_TEMPERATURE_AIR_2M_F      | REAL      | NULL     | NULL              | Y         |
-| FORECAST   | FORECAST_DAY      |  1           | POSTAL_CODE                   | TEXT      | 16777216 | NULL              | Y         |
-| FORECAST   | FORECAST_DAY      |  2           | COUNTRY                       | TEXT      | 16777216 | NULL              | Y         |
-| FORECAST   | FORECAST_DAY      |  3           | LATITUDE                      | REAL      | NULL     | NULL              | Y         |
-| FORECAST   | FORECAST_DAY      |  4           | LONGITUDE                     | REAL      | NULL     | NULL              | Y         |
-| FORECAST   | FORECAST_DAY      |  5           | DATE_VALID_STD                | DATE      | NULL     | NULL              | Y         |
-| FORECAST   | FORECAST_DAY      |  6           | AVG_TEMPERATURE_AIR_2M_F      | REAL      | NULL     | NULL              | Y         |
-| FORECAST   | FORECAST_DAY      |  7           | MAX_TEMPERATURE_AIR_2M_F      | REAL      | NULL     | NULL              | Y         |
-| FORECAST   | FORECAST_DAY      |  8           | MIN_TEMPERATURE_AIR_2M_F      | REAL      | NULL     | NULL              | Y         |
-| FORECAST   | FORECAST_DAY      |  9           | PRECIPITATION_IN              | REAL      | NULL     | NULL              | Y         |
-| FORECAST   | FORECAST_DAY      | 10           | WIND_SPEED_10M_MPH            | REAL      | NULL     | NULL              | Y         |
-| FORECAST   | FORECAST_HOUR     |  1           | POSTAL_CODE                   | TEXT      | 16777216 | NULL              | Y         |
-| FORECAST   | FORECAST_HOUR     |  2           | COUNTRY                       | TEXT      | 16777216 | NULL              | Y         |
-| FORECAST   | FORECAST_HOUR     |  3           | LATITUDE                      | REAL      | NULL     | NULL              | Y         |
-| FORECAST   | FORECAST_HOUR     |  4           | LONGITUDE                     | REAL      | NULL     | NULL              | Y         |
-| FORECAST   | FORECAST_HOUR     |  5           | DATE_VALID_STD                | DATE      | NULL     | NULL              | Y         |
-| FORECAST   | FORECAST_HOUR     |  6           | TIME_INIT_UTC                 | TIMESTAMP | NULL     | NULL              | Y         |
-| FORECAST   | FORECAST_HOUR     |  7           | TEMPERATURE_AIR_2M_F          | REAL      | NULL     | NULL              | Y         |
-| FORECAST   | FORECAST_HOUR     |  8           | PRECIPITATION_IN              | REAL      | NULL     | NULL              | Y         |
-| FORECAST   | FORECAST_HOUR     |  9           | WIND_SPEED_10M_MPH            | REAL      | NULL     | NULL              | Y         |
-| HISTORICAL | HISTORY_DAY       |  1           | POSTAL_CODE                   | TEXT      | 16777216 | NULL              | Y         |
-| HISTORICAL | HISTORY_DAY       |  2           | COUNTRY                       | TEXT      | 16777216 | NULL              | Y         |
-| HISTORICAL | HISTORY_DAY       |  3           | LATITUDE                      | REAL      | NULL     | NULL              | Y         |
-| HISTORICAL | HISTORY_DAY       |  4           | LONGITUDE                     | REAL      | NULL     | NULL              | Y         |
-| HISTORICAL | HISTORY_DAY       |  5           | DATE_VALID_STD                | DATE      | NULL     | NULL              | Y         |
-| HISTORICAL | HISTORY_DAY       |  6           | AVG_TEMPERATURE_AIR_2M_F      | REAL      | NULL     | NULL              | Y         |
-| HISTORICAL | HISTORY_DAY       |  7           | MAX_TEMPERATURE_AIR_2M_F      | REAL      | NULL     | NULL              | Y         |
-| HISTORICAL | HISTORY_DAY       |  8           | MIN_TEMPERATURE_AIR_2M_F      | REAL      | NULL     | NULL              | Y         |
-| HISTORICAL | HISTORY_DAY       |  9           | PRECIPITATION_IN              | REAL      | NULL     | NULL              | Y         |
-| HISTORICAL | HISTORY_DAY       | 10           | AVG_WIND_SPEED_10M_MPH        | REAL      | NULL     | NULL              | Y         |
-| HISTORICAL | HISTORY_HOUR      |  1           | POSTAL_CODE                   | TEXT      | 16777216 | NULL              | Y         |
-| HISTORICAL | HISTORY_HOUR      |  2           | COUNTRY                       | TEXT      | 16777216 | NULL              | Y         |
-| HISTORICAL | HISTORY_HOUR      |  3           | LATITUDE                      | REAL      | NULL     | NULL              | Y         |
-| HISTORICAL | HISTORY_HOUR      |  4           | LONGITUDE                     | REAL      | NULL     | NULL              | Y         |
-| HISTORICAL | HISTORY_HOUR      |  5           | DATE_VALID_STD                | DATE      | NULL     | NULL              | Y         |
-| HISTORICAL | HISTORY_HOUR      |  6           | TIME_INIT_UTC                 | TIMESTAMP | NULL     | NULL              | Y         |
-| HISTORICAL | HISTORY_HOUR      |  7           | TEMPERATURE_AIR_2M_F          | REAL      | NULL     | NULL              | Y         |
-| HISTORICAL | HISTORY_HOUR      |  8           | PRECIPITATION_IN              | REAL      | NULL     | NULL              | Y         |
-| HISTORICAL | HISTORY_HOUR      |  9           | WIND_SPEED_10M_MPH            | REAL      | NULL     | NULL              | Y         |
-| HISTORICAL | HISTORY_POINT     |  1           | POSTAL_CODE                   | TEXT      | 16777216 | NULL              | Y         |
-| HISTORICAL | HISTORY_POINT     |  2           | COUNTRY                       | TEXT      | 16777216 | NULL              | Y         |
-| HISTORICAL | HISTORY_POINT     |  3           | LATITUDE                      | REAL      | NULL     | NULL              | Y         |
-| HISTORICAL | HISTORY_POINT     |  4           | LONGITUDE                     | REAL      | NULL     | NULL              | Y         |
-| HISTORICAL | HISTORY_POINT     |  5           | DATE_VALID_STD                | DATE      | NULL     | NULL              | Y         |
-| HISTORICAL | HISTORY_POINT     |  6           | TEMPERATURE_AIR_2M_F          | REAL      | NULL     | NULL              | Y         |
-| HISTORICAL | HISTORY_POINT     |  7           | PRECIPITATION_IN              | REAL      | NULL     | NULL              | Y         |
-| HISTORICAL | HISTORY_POINT     |  8           | WIND_SPEED_10M_MPH            | REAL      | NULL     | NULL              | Y         |
-+------------+-------------------+--------------+-------------------------------+-----------+----------+-------------------+-----------+
-```
+*(awaiting actual output — please run the corrected query and paste the result here)*
 
 ---
 
