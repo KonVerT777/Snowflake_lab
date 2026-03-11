@@ -119,20 +119,18 @@ ORDER BY TABLE_SCHEMA;
 **Response:**
 
 ```
-+-------------------------------------+------------+--------------------------------------------------+
-| SCHEMA_NAME                         | VIEW_COUNT | VIEW_NAMES                                       |
-+-------------------------------------+------------+--------------------------------------------------+
-| CLIMATE                             |          2 | CLIMATOLOGY_STATS, CLIMATE_NORMALS               |
-| FORECAST                            |          3 | FORECAST_DAY, FORECAST_HOUR, FORECAST_DETAILS    |
-| HISTORICAL                          |          3 | HISTORY_DAY, HISTORY_HOUR, HISTORY_POINT         |
-+-------------------------------------+------------+--------------------------------------------------+
++--------------------+------------+--------------------------------------------------------------+
+| SCHEMA_NAME        | VIEW_COUNT | VIEW_NAMES                                                   |
++--------------------+------------+--------------------------------------------------------------+
+| INFORMATION_SCHEMA |         60 | APPLICABLE_ROLES, APPLICATION_CONFIGURATIONS, ...            |
+| PWS_BI_SAMPLE      |          3 | POINT_CLIMATOLOGY_DAY, POINT_FORECAST_DAY, POINT_HISTORY_DAY |
++--------------------+------------+--------------------------------------------------------------+
 ```
 
 **Summary:**
-- `CLIMATE` schema: **2 views** — `CLIMATOLOGY_STATS`, `CLIMATE_NORMALS`
-- `FORECAST` schema: **3 views** — `FORECAST_DAY`, `FORECAST_HOUR`, `FORECAST_DETAILS`
-- `HISTORICAL` schema: **3 views** — `HISTORY_DAY`, `HISTORY_HOUR`, `HISTORY_POINT`
-- **Total: 8 views across 3 schemas**
+- `INFORMATION_SCHEMA` schema: **60 views** — system metadata views
+- `PWS_BI_SAMPLE` schema: **3 views** — `POINT_CLIMATOLOGY_DAY`, `POINT_FORECAST_DAY`, `POINT_HISTORY_DAY`
+- **Total: 63 views across 2 schemas**
 
 ---
 
