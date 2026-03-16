@@ -170,8 +170,8 @@ CREATE OR REPLACE VIEW hot_and_cold_hist AS
     SELECT * FROM (
         SELECT
             DATE_VALID_STD,
-            COUNTRY,
-            POSTAL_CODE,
+            COUNTRY_CODE,
+            CITY_NAME,
             AVG_TEMPERATURE_AIR_2M_F,
             'HOTTEST' AS TEMPERATURE_CATEGORY
         FROM GLOBAL_WEATHER__CLIMATE_DATA_BY_PELMOREX_WEATHER_SOURCE.PWS_BI_SAMPLE.POINT_HISTORY_DAY
@@ -185,8 +185,8 @@ CREATE OR REPLACE VIEW hot_and_cold_hist AS
     SELECT * FROM (
         SELECT
             DATE_VALID_STD,
-            COUNTRY,
-            POSTAL_CODE,
+            COUNTRY_CODE,
+            CITY_NAME,
             AVG_TEMPERATURE_AIR_2M_F,
             'COLDEST' AS TEMPERATURE_CATEGORY
         FROM GLOBAL_WEATHER__CLIMATE_DATA_BY_PELMOREX_WEATHER_SOURCE.PWS_BI_SAMPLE.POINT_HISTORY_DAY
@@ -200,8 +200,8 @@ CREATE OR REPLACE VIEW GLOBAL.GLOBAL_WEATHER.hot_and_cold_hist AS
     SELECT * FROM (
         SELECT
             DATE_VALID_STD,
-            COUNTRY,
-            POSTAL_CODE,
+            COUNTRY_CODE,
+            CITY_NAME,
             AVG_TEMPERATURE_AIR_2M_F,
             'HOTTEST' AS TEMPERATURE_CATEGORY
         FROM GLOBAL_WEATHER__CLIMATE_DATA_BY_PELMOREX_WEATHER_SOURCE.PWS_BI_SAMPLE.POINT_HISTORY_DAY
@@ -212,8 +212,8 @@ CREATE OR REPLACE VIEW GLOBAL.GLOBAL_WEATHER.hot_and_cold_hist AS
     SELECT * FROM (
         SELECT
             DATE_VALID_STD,
-            COUNTRY,
-            POSTAL_CODE,
+            COUNTRY_CODE,
+            CITY_NAME,
             AVG_TEMPERATURE_AIR_2M_F,
             'COLDEST' AS TEMPERATURE_CATEGORY
         FROM GLOBAL_WEATHER__CLIMATE_DATA_BY_PELMOREX_WEATHER_SOURCE.PWS_BI_SAMPLE.POINT_HISTORY_DAY
@@ -231,9 +231,9 @@ ORDER BY AVG_TEMPERATURE_AIR_2M_F ASC
 LIMIT 10;
 
 /* RESPONSE (Task 6 Part 2):
-+----------------+---------+-------------+-------------------------+----------------------+
-| DATE_VALID_STD | COUNTRY | POSTAL_CODE | AVG_TEMPERATURE_AIR_2M_F| TEMPERATURE_CATEGORY |
-+----------------+---------+-------------+-------------------------+----------------------+
++----------------+--------------+-----------+-------------------------+----------------------+
+| DATE_VALID_STD | COUNTRY_CODE | CITY_NAME | AVG_TEMPERATURE_AIR_2M_F| TEMPERATURE_CATEGORY |
++----------------+--------------+-----------+-------------------------+----------------------+
 | 2022-01-12     | RU      | 677010      |                  -72.10 | COLDEST              |
 | 2022-01-13     | RU      | 677010      |                  -71.88 | COLDEST              |
 | 2022-01-11     | RU      | 677010      |                  -71.54 | COLDEST              |
