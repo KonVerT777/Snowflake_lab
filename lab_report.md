@@ -653,23 +653,49 @@ ORDER BY AVG_TEMP_F DESC;
 **Summary:**
 
 **Approach:**
-- Used `POINT_CLIMATOLOGY_DAY` view (30-year normals) as the baseline
-- Segmented data by country, hemisphere, latitude band, and season
-- Compared summer vs winter averages to classify continental vs oceanic climate types
 
-**Key findings:**
+Three queries were used against the `POINT_CLIMATOLOGY_DAY` view (Pelmorex 30-year climatological normals) to compare climate across different geographic dimensions:
 
-| Climate Zone | Avg Temp °F | Seasonal Swing |
-|---|---|---|
-| Subtropical North (0–30°N) | 75–90°F | Low (~10–15°F) |
-| Temperate North (30–60°N) | 45–60°F | High (40–60°F) |
-| Arctic (60–90°N) | 5–25°F | Extreme (60–90°F) |
+1. **Query 1 — Country-level climate statistics:** Aggregated average, minimum, and maximum temperatures per country along with the overall temperature range and the number of sampled locations. Results were ordered by average temperature descending to rank countries from warmest to coldest.
 
-- **Continental climates** (Russia, Canada, Kazakhstan): seasonal swings of 65–85°F — cold Siberian winters vs warm summers
-- **Oceanic climates** (UK, Iceland, New Zealand): seasonal swings of 18–22°F — maritime buffer moderates temperature extremes
-- **Hottest zones:** Djibouti, Kuwait, UAE average **95°F** year-round with minimal seasonal variation
-- **Island nations** show the smallest temperature ranges; **landlocked Central Asian countries** show the largest swings
-- Southern Hemisphere has smaller extremes overall due to greater ocean coverage
+2. **Query 2 — Seasonal swing (summer vs winter):** Used `DOY_STD` (day-of-year standard) with `CASE` expressions to isolate summer days (DOY 152–243, roughly June–August) and winter days (DOY 335–365 or 1–59, roughly December–February). The difference between summer and winter averages was computed as `SEASONAL_SWING_F` and sorted by its absolute value to surface the most extreme climates first.
+
+3. **Query 3 — Latitude band (climate zone) comparison:** A `CASE` expression bucketed each location into six climate zones based on `LATITUDE_DEG`. Aggregate temperature statistics were computed per zone to show how temperature varies systematically with latitude.
+
+**Key findings from actual query results:**
+
+*Query 1 — Warmest to coldest countries (avg °F):*
+
+| Country | Avg Temp (°F) | Temp Range (°F) |
+|---------|--------------|----------------|
+| BR      | 65.52        | 25.8           |
+| AU      | 63.96        | 29.5           |
+| US      | 63.24        | 69.3           |
+| ZA      | 62.36        | 25.0           |
+| JP      | 58.66        | 56.4           |
+| MX      | 56.10        | 39.5           |
+| FR      | 52.01        | 43.7           |
+| CA      | 41.43        | 67.7           |
+
+Brazil (BR) ranked warmest at 65.52°F average, while Canada (CA) was coldest at 41.43°F. The US and Canada exhibited the largest temperature ranges (~69°F and ~68°F respectively), indicating strong continental seasonality.
+
+*Query 2 — Seasonal swing highlights:*
+
+- **Canada** showed the largest swing (+40.55°F): summers ~62°F vs winters ~21°F — a classic continental climate.
+- **Japan** and the **US** followed with swings of +35°F and +27°F respectively.
+- **Australia**, **South Africa**, and **Brazil** showed *negative* swings (−15°F, −11°F, −9°F), confirming reversed seasons in the Southern Hemisphere — their "summer" in Northern Hemisphere terms falls during winter months.
+- **Mexico** had the smallest swing (5.78°F), reflecting its largely subtropical, year-round warm character.
+
+*Query 3 — Climate zones by latitude band:*
+
+| Climate Zone                  | Locations | Avg Temp (°F) | Min (°F) | Max (°F) |
+|-------------------------------|-----------|--------------|----------|----------|
+| Subtropical South (0–30 S)    | 1         | 65.52        | 52.9     | 78.7     |
+| Temperate South (30–60 S)     | 2         | 63.16        | 49.3     | 78.8     |
+| Subtropical North (0–30 N)    | 2         | 63.13        | 39.1     | 95.3     |
+| Temperate North (30–60 N)     | 5         | 54.33        | 8.3      | 89.0     |
+
+Southern Hemisphere zones (subtropical and temperate south) were slightly warmer on average than their Northern Hemisphere counterparts, consistent with less land mass and greater ocean heat retention. The Subtropical North recorded the highest peak temperature (95.3°F), while the Temperate North saw the coldest minimum (8.3°F) and the widest spread, reflecting the diversity of mid-latitude climates across five distinct locations.
 
 ---
 
